@@ -18,7 +18,7 @@ func main() {
 
 	srv := server.NewServer(db)
 
-	if err := srv.Start(); err != nil {
+	if err := srv.Start(*cfg); err != nil {
 		panic(err)
 	}
 }
