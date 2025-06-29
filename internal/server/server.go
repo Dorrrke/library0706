@@ -2,9 +2,11 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/Dorrrke/library0706/internal"
 	domainErrors "github.com/Dorrrke/library0706/internal/domain/errors"
 	"github.com/Dorrrke/library0706/internal/domain/models"
 	inmemory "github.com/Dorrrke/library0706/internal/repository/inmemory"
@@ -25,7 +27,7 @@ func NewServer(db *inmemory.UserStrage) *LibraryApi {
 	}
 }
 
-func (s *LibraryApi) Start() error {
+func (s *LibraryApi) Start(cfg internal.Config) error {
 	router := gin.Default()
 	router.POST("/books")
 	task := router.Group("/books")
@@ -41,7 +43,7 @@ func (s *LibraryApi) Start() error {
 		users.POST("/login", s.login)
 	}
 
-	return router.Run(":8080")
+	return router.Run(fmt.Sprintf("%s:%d", cfg.Addr, cfg.Port)) //0.0.0.0:8080
 }
 
 func (api *LibraryApi) register(ctx *gin.Context) {
