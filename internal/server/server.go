@@ -9,7 +9,6 @@ import (
 	"github.com/Dorrrke/library0706/internal"
 	domainErrors "github.com/Dorrrke/library0706/internal/domain/errors"
 	"github.com/Dorrrke/library0706/internal/domain/models"
-	inmemory "github.com/Dorrrke/library0706/internal/repository/inmemory"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -17,11 +16,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type LibraryApi struct {
-	db *inmemory.Storage
+type Repository interface {
+	GetUser(email string) (models.User, error)
+	SaveUser(user models.User) error
+	GetBooksList() ([]models.Book, error)
+	SaveBook(book models.Book) error
 }
 
-func NewServer(db *inmemory.Storage) *LibraryApi {
+type LibraryApi struct {
+	db Repository
+}
+
+func NewServer(db Repository) *LibraryApi {
 	return &LibraryApi{
 		db: db,
 	}
@@ -104,7 +110,7 @@ func (api *LibraryApi) login(ctx *gin.Context) {
 		return
 	}
 
-	dbUser, err := api.db.GetUser(user)
+	dbUser, err := api.db.GetUser(user.Email)
 	if err != nil {
 		if errors.Is(err, domainErrors.ErrIvalidCreds) {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})

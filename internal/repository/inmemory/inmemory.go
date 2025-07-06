@@ -31,9 +31,9 @@ func (s *Storage) SaveUser(user models.User) error {
 	return nil
 }
 
-func (s *Storage) GetUser(user models.UserLogin) (models.User, error) {
+func (s *Storage) GetUser(email string) (models.User, error) {
 	for _, dbUser := range s.userDB {
-		if dbUser.Email == user.Email {
+		if dbUser.Email == email {
 			return dbUser, nil
 		}
 	}
@@ -53,13 +53,13 @@ func (s *Storage) GetBooksList() ([]models.Book, error) {
 	return booksList, nil
 }
 
-func (s *Storage) SaveBook(book models.Book) {
+func (s *Storage) SaveBook(book models.Book) error {
 	for key, b := range s.bookDB {
 		if b.Author == book.Author && b.Lable == book.Lable {
 			mBook := s.bookDB[key]
 			mBook.Count++
 			s.bookDB[key] = mBook
-			return
+			return nil
 		}
 	}
 
@@ -68,4 +68,5 @@ func (s *Storage) SaveBook(book models.Book) {
 	book.Count = 1
 
 	s.bookDB[bookID] = book
+	return nil
 }
