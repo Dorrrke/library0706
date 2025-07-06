@@ -14,7 +14,7 @@ func main() {
 	log.Printf("\nServer addr: %s\nServer port: %d\n\n", cfg.Addr, cfg.Port)
 
 	log.Println("Starting server .....")
-	db := inmemory.NewUserStorage()
+	db := inmemory.NewStorage()
 
 	srv := server.NewServer(db)
 

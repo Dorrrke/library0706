@@ -18,10 +18,10 @@ import (
 )
 
 type LibraryApi struct {
-	db *inmemory.UserStrage
+	db *inmemory.Storage
 }
 
-func NewServer(db *inmemory.UserStrage) *LibraryApi {
+func NewServer(db *inmemory.Storage) *LibraryApi {
 	return &LibraryApi{
 		db: db,
 	}
@@ -30,12 +30,13 @@ func NewServer(db *inmemory.UserStrage) *LibraryApi {
 func (s *LibraryApi) Start(cfg internal.Config) error {
 	router := gin.Default()
 	router.POST("/books")
-	task := router.Group("/books")
+	books := router.Group("/books")
 	{
-		task.POST("/save")
-		task.PUT("/:id")
-		task.DELETE("/:id")
-		task.GET("/:id")
+		books.POST("/create", s.newBook)
+		books.GET("/list", s.booksList)
+		books.GET("/get/:bookID")
+		books.PUT("/update/:bookID")
+		books.DELETE("/delete/:bookID")
 	}
 	users := router.Group("/users")
 	{
@@ -120,4 +121,27 @@ func (api *LibraryApi) login(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, dbUser)
+}
+
+func (api *LibraryApi) booksList(ctx *gin.Context) {
+	books, err := api.db.GetBooksList()
+	if err != nil {
+		log.Println(err.Error())
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, books)
+}
+
+func (api *LibraryApi) newBook(ctx *gin.Context) {
+	var book models.Book
+	err := ctx.ShouldBindBodyWithJSON(&book)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	api.db.SaveBook(book)
+
+	ctx.JSON(http.StatusCreated, book)
 }
