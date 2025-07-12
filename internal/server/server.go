@@ -9,7 +9,6 @@ import (
 	"github.com/Dorrrke/library0706/internal"
 	domainErrors "github.com/Dorrrke/library0706/internal/domain/errors"
 	"github.com/Dorrrke/library0706/internal/domain/models"
-	inmemory "github.com/Dorrrke/library0706/internal/repository/inmemory"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -17,11 +16,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type LibraryApi struct {
-	db *inmemory.UserStrage
+type Repository interface {
+	GetUser(email string) (models.User, error)
+	SaveUser(user models.User) error
+	GetBooksList() ([]models.Book, error)
+	SaveBook(book models.Book) error
 }
 
-func NewServer(db *inmemory.UserStrage) *LibraryApi {
+type LibraryApi struct {
+	db Repository
+}
+
+func NewServer(db Repository) *LibraryApi {
 	return &LibraryApi{
 		db: db,
 	}
@@ -30,12 +36,13 @@ func NewServer(db *inmemory.UserStrage) *LibraryApi {
 func (s *LibraryApi) Start(cfg internal.Config) error {
 	router := gin.Default()
 	router.POST("/books")
-	task := router.Group("/books")
+	books := router.Group("/books")
 	{
-		task.POST("/save")
-		task.PUT("/:id")
-		task.DELETE("/:id")
-		task.GET("/:id")
+		books.POST("/create", s.newBook)
+		books.GET("/list", s.booksList)
+		books.GET("/get/:bookID")
+		books.PUT("/update/:bookID")
+		books.DELETE("/delete/:bookID")
 	}
 	users := router.Group("/users")
 	{
@@ -103,7 +110,7 @@ func (api *LibraryApi) login(ctx *gin.Context) {
 		return
 	}
 
-	dbUser, err := api.db.GetUser(user)
+	dbUser, err := api.db.GetUser(user.Email)
 	if err != nil {
 		if errors.Is(err, domainErrors.ErrIvalidCreds) {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -120,4 +127,27 @@ func (api *LibraryApi) login(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, dbUser)
+}
+
+func (api *LibraryApi) booksList(ctx *gin.Context) {
+	books, err := api.db.GetBooksList()
+	if err != nil {
+		log.Println(err.Error())
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, books)
+}
+
+func (api *LibraryApi) newBook(ctx *gin.Context) {
+	var book models.Book
+	err := ctx.ShouldBindBodyWithJSON(&book)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	api.db.SaveBook(book)
+
+	ctx.JSON(http.StatusCreated, book)
 }
