@@ -40,7 +40,6 @@ func (s *Storage) GetBooksList() ([]models.Book, error) {
 		}
 		books = append(books, book)
 	}
-
 	return books, nil
 }
 
