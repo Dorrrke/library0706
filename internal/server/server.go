@@ -21,6 +21,7 @@ type Repository interface {
 	SaveUser(user models.User) error
 	GetBooksList() ([]models.Book, error)
 	SaveBook(book models.Book) error
+	SaveBooks([]models.Book) error
 }
 
 type LibraryApi struct {
@@ -39,6 +40,7 @@ func (s *LibraryApi) Start(cfg internal.Config) error {
 	books := router.Group("/books")
 	{
 		books.POST("/create", s.newBook)
+		books.POST("/create/batch", s.newBooks)
 		books.GET("/list", s.booksList)
 		books.GET("/get/:bookID")
 		books.PUT("/update/:bookID")
@@ -150,4 +152,24 @@ func (api *LibraryApi) newBook(ctx *gin.Context) {
 	api.db.SaveBook(book)
 
 	ctx.JSON(http.StatusCreated, book)
+}
+
+func (api *LibraryApi) newBooks(ctx *gin.Context) {
+	var books []models.Book
+	err := ctx.ShouldBindBodyWithJSON(&books)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for i := range books {
+		books[i].BookID = uuid.New().String()
+	}
+
+	if err = api.db.SaveBooks(books); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, "books created")
 }

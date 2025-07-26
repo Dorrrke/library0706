@@ -13,6 +13,11 @@ type Storage struct {
 	bookDB map[string]models.Book
 }
 
+// SaveBooks implements server.Repository.
+func (s *Storage) SaveBooks([]models.Book) error {
+	panic("unimplemented")
+}
+
 func NewStorage() *Storage {
 	return &Storage{
 		userDB: make(map[string]models.User),

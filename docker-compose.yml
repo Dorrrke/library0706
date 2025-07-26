@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: library
+    ports:
+      - "5432:5432"
+
+  libapp:
+    build: .
+    environment:
+      - DB_DSN=postgresql://user:password@db:5432/library?sslmode=disable
+      - MIGRATE_PATH=migrations
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./migrations:/root/migrations
+    depends_on:
+      - db
+
