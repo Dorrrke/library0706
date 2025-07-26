@@ -7,6 +7,14 @@ CREATE TABLE IF NOT EXISTS users(
     UNIQUE (email)
 );
 
+CREATE TABLE IF NOT EXISTS tokens(
+    tid varchar(36) NOT NULL PRIMARY KEY,
+    uid varchar(36) NOT NULL,
+    token text NOT NULL,
+    valid boolean NOT NULL DEFAULT TRUE,
+    FOREIGN KEY (uid) REFERENCES users(uid)
+);
+
 CREATE TABLE IF NOT EXISTS books(
     bid varchar(36) NOT NULL PRIMARY KEY,
     author text NOT NULL,
