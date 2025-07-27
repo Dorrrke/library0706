@@ -30,13 +30,13 @@ func (s *LibraryApi) JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenStr := authHeader[len("Bearer "):]
-		uid, err := parseToken(tokenStr)
+		claims, err := parseToken(tokenStr)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			ctx.Abort()
 			return
 		}
-		ctx.Set("user_id", uid)
+		ctx.Set("user_id", claims.UserID)
 		ctx.Next()
 	}
 }
