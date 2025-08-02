@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX uniq_borrowed_book ON borrowed_books (book_id, user_id);

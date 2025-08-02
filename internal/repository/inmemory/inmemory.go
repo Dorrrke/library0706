@@ -13,6 +13,31 @@ type Storage struct {
 	bookDB map[string]models.Book
 }
 
+// ReturnBook implements server.Repository.
+func (s *Storage) ReturnBook(bid string, uid string) error {
+	panic("unimplemented")
+}
+
+// BorrowBook implements server.Repository.
+func (s *Storage) BorrowBook(bid string, uid string) error {
+	panic("unimplemented")
+}
+
+// GetBook implements server.Repository.
+func (s *Storage) GetBook(bid string) (models.Book, error) {
+	panic("unimplemented")
+}
+
+// CheckRefreshToken implements server.Repository.
+func (s *Storage) CheckRefreshToken(tokenID string) (bool, error) {
+	panic("unimplemented")
+}
+
+// SaveRefreshToken implements server.Repository.
+func (s *Storage) SaveRefreshToken(refreshToken string, tokenID string, userID string) error {
+	panic("unimplemented")
+}
+
 // SaveBooks implements server.Repository.
 func (s *Storage) SaveBooks([]models.Book) error {
 	panic("unimplemented")
