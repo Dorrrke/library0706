@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Dorrrke/library0706/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -21,9 +22,11 @@ type Claims struct {
 }
 
 func (s *LibraryApi) JWTAuthMiddleware() gin.HandlerFunc {
+	log := logger.Get()
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		if authHeader == "" || len(authHeader) < 8 {
+			log.Debug().Msg("no authorization header")
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			ctx.Abort()
 			return
@@ -32,6 +35,7 @@ func (s *LibraryApi) JWTAuthMiddleware() gin.HandlerFunc {
 		tokenStr := authHeader[len("Bearer "):]
 		claims, err := parseToken(tokenStr)
 		if err != nil {
+			log.Error().Err(err).Msg("failed to parse token")
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			ctx.Abort()
 			return

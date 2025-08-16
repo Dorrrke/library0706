@@ -5,6 +5,8 @@ import (
 
 	"github.com/Dorrrke/library0706/internal"
 	"github.com/Dorrrke/library0706/internal/domain/models"
+	"github.com/Dorrrke/library0706/pkg/logger"
+	"github.com/rs/zerolog"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,19 +25,26 @@ type Repository interface {
 }
 
 type LibraryApi struct {
-	db Repository
+	db  Repository
+	log zerolog.Logger
 }
 
 func NewServer(db Repository) *LibraryApi {
+	log := logger.Get()
 	return &LibraryApi{
-		db: db,
+		db:  db,
+		log: log,
 	}
 }
 
 func (s *LibraryApi) Start(cfg internal.Config) error {
-	router := gin.Default()
+	if cfg.Debug {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	router := gin.New()
 	router.POST("/refresh", s.refreshHandler)
-	router.POST("/books")
 	books := router.Group("/books")
 	{
 		books.POST("/create", s.JWTAuthMiddleware(), s.newBook)
