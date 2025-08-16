@@ -11,6 +11,7 @@ type Config struct {
 	Port        int
 	DBDSN       string
 	MigratePath string
+	Debug       bool
 }
 
 const (
@@ -26,6 +27,7 @@ func ReadConfig() *Config {
 	flag.IntVar(&cfg.Port, "port", defaultPort, "flag for use custom server port")
 	flag.StringVar(&cfg.DBDSN, "db", defaultDBStr, "flag for setup db connection string")
 	flag.StringVar(&cfg.MigratePath, "migrate", "migrations", "flag for setup path to migrations")
+	flag.BoolVar(&cfg.Debug, "debug", false, "flag for enable debug mode")
 	flag.Parse()
 
 	cfg.DBDSN = cmp.Or(os.Getenv("DB_DSN"), cfg.DBDSN)
