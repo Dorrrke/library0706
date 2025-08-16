@@ -45,6 +45,7 @@ func (s *LibraryApi) Start(cfg internal.Config) error {
 	}
 	router := gin.New()
 	router.POST("/refresh", s.refreshHandler)
+	router.GET("/health", s.healthHandler)
 	books := router.Group("/books")
 	{
 		books.POST("/create", s.JWTAuthMiddleware(), s.newBook)
@@ -63,4 +64,8 @@ func (s *LibraryApi) Start(cfg internal.Config) error {
 	}
 
 	return router.Run(fmt.Sprintf("%s:%d", cfg.Addr, cfg.Port)) //0.0.0.0:8080
+}
+
+func (s *LibraryApi) healthHandler(ctx *gin.Context) {
+	ctx.JSON(200, gin.H{"status": "ok"})
 }
